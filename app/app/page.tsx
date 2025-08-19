@@ -1,8 +1,10 @@
+import { LogoutButton } from "@/components/LogoutButton";
 export default function Page() {
   return (
     <main className="min-h-dvh bg-black text-white">
       <section className="mx-auto max-w-[1100px] px-6 py-20">
         <h1 className="text-4xl md:text-5xl font-semibold">
+        <LogoutButton />
           Ipsera App — Votre studio IA
         </h1>
         <p className="mt-3 opacity-80">
