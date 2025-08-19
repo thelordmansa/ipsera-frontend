@@ -1,6 +1,9 @@
+export const dynamic = 'force-dynamic';
 'use client';
+
 import { useState } from 'react';
-import { supabase } from '@/lib/supabase'
+import { getSupabaseClient } from '@/lib/supabase';
+
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -9,11 +12,18 @@ export default function LoginPage() {
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setMsg(null); setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) setMsg(`Erreur: ${error.message}`);
-    else window.location.href = '/app';
-    setLoading(false);
+    setMsg(null);
+    setLoading(true);
+    try {
+      const supabase = getSupabaseClient();
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) setMsg(`Erreur: ${error.message}`);
+      else window.location.href = '/app';
+    } catch (err: any) {
+      setMsg(`Erreur: ${err?.message || 'Auth failed'}`);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
