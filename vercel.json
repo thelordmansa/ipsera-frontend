@@ -2,7 +2,9 @@
   "rewrites": [
     {
       "source": "/(.*)",
-      "has": [{ "type": "host", "value": "app.ipsera.io" }],
+      "has": [
+        { "type": "header", "key": "host", "value": "app\\.ipsera\\.io" }
+      ],
       "destination": "/app/$1"
     }
   ]
