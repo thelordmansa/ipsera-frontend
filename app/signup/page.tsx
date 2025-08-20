@@ -1,5 +1,5 @@
-export const dynamic = 'force-dynamic';
 'use client';
+export const dynamic = 'force-dynamic';
 
 import { useState } from 'react';
 import { getSupabaseClient } from '@/lib/supabase';
@@ -10,47 +10,42 @@ export default function SignupPage() {
   const [msg, setMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  async function onSubmit(e: React.FormEvent) {
+  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setMsg(null);
     setLoading(true);
     try {
       const supabase = getSupabaseClient();
 
-      // 1) Signup
+      // Signup
       const { error: signErr } = await supabase.auth.signUp({ email, password });
       if (signErr) {
         setMsg(`Erreur: ${signErr.message}`);
         return;
       }
 
-      // 2) Vérifier si une session existe (email confirmée ⇒ session immédiate)
+      // Vérifier si une session existe
       const { data: sess } = await supabase.auth.getSession();
       const hasSession = !!sess?.session;
 
       if (hasSession) {
-        // 3) Créer le profil si non existant
+        // Créer profil
         const { data: userData } = await supabase.auth.getUser();
         const user = userData?.user;
         if (user) {
           await supabase
             .from('profiles')
-            .upsert(
-              { id: user.id, email: user.email },
-              { onConflict: 'id', ignoreDuplicates: false }
-            );
+            .upsert({ id: user.id, email: user.email }, { onConflict: 'id', ignoreDuplicates: false });
         }
-        // 4) Rediriger dans l'app
         window.location.href = '/app';
       } else {
-        // Confirmation email probablement requise
         setMsg('Compte créé. Vérifie ta boîte mail pour confirmer ton adresse.');
       }
     } catch (err: unknown) {
       if (err instanceof Error) {
         setMsg(`Erreur: ${err.message}`);
       } else {
-        setMsg('Signup failed');
+        setMsg('Erreur inconnue lors de la création du compte.');
       }
     } finally {
       setLoading(false);

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { getSupabaseClient } from '@/lib/supabase';
+import type { AuthChangeEvent, Session } from '@supabase/supabase-js';
 
 export default function AuthGate({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -13,27 +14,30 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
     const supabase = getSupabaseClient();
 
     // Vérification initiale
-    supabase.auth.getSession().then(({ data }) => {
+    (async () => {
+      const { data } = await supabase.auth.getSession();
       const authed = !!data.session;
       if (!authed && pathname?.startsWith('/app')) {
         router.replace('/login');
       } else {
         setReady(true);
       }
-    });
+    })();
 
-    // Réagir aux changements d’état auth
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
-      const authed = !!session;
-      if (!authed && pathname?.startsWith('/app')) {
-        router.replace('/login');
-      } else if (authed && (pathname === '/login' || pathname === '/signup')) {
-        router.replace('/app');
+    // Abonnement typé
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event: AuthChangeEvent, session: Session | null) => {
+        const authed = !!session;
+        if (!authed && pathname?.startsWith('/app')) {
+          router.replace('/login');
+        } else if (authed && (pathname === '/login' || pathname === '/signup')) {
+          router.replace('/app');
+        }
       }
-    });
+    );
 
     return () => {
-      sub.subscription.unsubscribe();
+      subscription.unsubscribe();
     };
   }, [pathname, router]);
 

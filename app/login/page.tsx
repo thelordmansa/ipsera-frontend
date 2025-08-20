@@ -1,5 +1,5 @@
-export const dynamic = 'force-dynamic';
 'use client';
+export const dynamic = 'force-dynamic';
 
 import { useState } from 'react';
 import { getSupabaseClient } from '@/lib/supabase';
@@ -10,23 +10,25 @@ export default function LoginPage() {
   const [msg, setMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  async function onSubmit(e: React.FormEvent) {
+  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setMsg(null);
     setLoading(true);
     try {
       const supabase = getSupabaseClient();
+
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
         setMsg(`Erreur: ${error.message}`);
-      } else {
-        window.location.href = '/app';
+        return;
       }
+
+      window.location.href = '/app';
     } catch (err: unknown) {
       if (err instanceof Error) {
         setMsg(`Erreur: ${err.message}`);
       } else {
-        setMsg('Auth failed');
+        setMsg('Erreur inconnue lors de la connexion.');
       }
     } finally {
       setLoading(false);
