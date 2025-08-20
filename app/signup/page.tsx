@@ -29,13 +29,16 @@ export default function SignupPage() {
       const hasSession = !!sess?.session;
 
       if (hasSession) {
-        // 3) Créer le profil si non existant (RLS doit autoriser l'utilisateur connecté)
+        // 3) Créer le profil si non existant
         const { data: userData } = await supabase.auth.getUser();
         const user = userData?.user;
         if (user) {
           await supabase
             .from('profiles')
-            .upsert({ id: user.id, email: user.email }, { onConflict: 'id', ignoreDuplicates: false });
+            .upsert(
+              { id: user.id, email: user.email },
+              { onConflict: 'id', ignoreDuplicates: false }
+            );
         }
         // 4) Rediriger dans l'app
         window.location.href = '/app';
@@ -43,8 +46,12 @@ export default function SignupPage() {
         // Confirmation email probablement requise
         setMsg('Compte créé. Vérifie ta boîte mail pour confirmer ton adresse.');
       }
-    } catch (err: any) {
-      setMsg(`Erreur: ${err?.message || 'Signup failed'}`);
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setMsg(`Erreur: ${err.message}`);
+      } else {
+        setMsg('Signup failed');
+      }
     } finally {
       setLoading(false);
     }
@@ -56,13 +63,19 @@ export default function SignupPage() {
         <h1 className="text-xl font-semibold">Créer un compte</h1>
         <input
           className="w-full border px-3 py-2 rounded"
-          type="email" placeholder="email"
-          value={email} onChange={e=>setEmail(e.target.value)} required
+          type="email"
+          placeholder="email"
+          value={email}
+          onChange={e => setEmail(e.target.value)}
+          required
         />
         <input
           className="w-full border px-3 py-2 rounded"
-          type="password" placeholder="mot de passe"
-          value={password} onChange={e=>setPassword(e.target.value)} required
+          type="password"
+          placeholder="mot de passe"
+          value={password}
+          onChange={e => setPassword(e.target.value)}
+          required
         />
         <button
           disabled={loading}

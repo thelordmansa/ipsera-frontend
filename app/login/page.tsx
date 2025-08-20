@@ -17,10 +17,17 @@ export default function LoginPage() {
     try {
       const supabase = getSupabaseClient();
       const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) setMsg(`Erreur: ${error.message}`);
-      else window.location.href = '/app';
-    } catch (err: any) {
-      setMsg(`Erreur: ${err?.message || 'Auth failed'}`);
+      if (error) {
+        setMsg(`Erreur: ${error.message}`);
+      } else {
+        window.location.href = '/app';
+      }
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setMsg(`Erreur: ${err.message}`);
+      } else {
+        setMsg('Auth failed');
+      }
     } finally {
       setLoading(false);
     }
@@ -30,12 +37,26 @@ export default function LoginPage() {
     <main className="min-h-dvh flex items-center justify-center">
       <form onSubmit={onSubmit} className="w-full max-w-sm space-y-3 p-6 border rounded-xl">
         <h1 className="text-xl font-semibold">Connexion</h1>
-        <input className="w-full border px-3 py-2 rounded" type="email" placeholder="email"
-               value={email} onChange={e=>setEmail(e.target.value)} required />
-        <input className="w-full border px-3 py-2 rounded" type="password" placeholder="mot de passe"
-               value={password} onChange={e=>setPassword(e.target.value)} required />
-        <button disabled={loading}
-          className="w-full border rounded px-3 py-2 hover:bg-black hover:text-white disabled:opacity-50">
+        <input
+          className="w-full border px-3 py-2 rounded"
+          type="email"
+          placeholder="email"
+          value={email}
+          onChange={e => setEmail(e.target.value)}
+          required
+        />
+        <input
+          className="w-full border px-3 py-2 rounded"
+          type="password"
+          placeholder="mot de passe"
+          value={password}
+          onChange={e => setPassword(e.target.value)}
+          required
+        />
+        <button
+          disabled={loading}
+          className="w-full border rounded px-3 py-2 hover:bg-black hover:text-white disabled:opacity-50"
+        >
           {loading ? '...' : 'Se connecter'}
         </button>
         {msg && <p className="text-sm opacity-70">{msg}</p>}
